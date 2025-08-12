@@ -1,27 +1,27 @@
-global.owner = ['62895331520602', '275664439611636'] // wajib di isi tidak boleh kosong
-global.mods  = ['62895331520602', '275664439611636'] // wajib di isi tidak boleh kosong
-global.prems = ['62895331520602', '275664439611636'] // wajib di isi tidak boleh kosong
-global.nameowner = 'Tio' // wajib di isi tidak boleh kosong
-global.numberowner = '62895331520602' // wajib di isi tidak boleh kosong
-global.mail = 'support@tioprm.eu.org' // wajib di isi tidak boleh kosong
-global.gc = 'https://chat.whatsapp.com/I5RpePh2b5u37OyFjzCNTr' // wajib di isi tidak boleh kosong
-global.instagram = 'https://instagram.com/prm2.0' // wajib di isi tidak boleh kosong
-global.wm = '© BOTCAHX' // isi nama bot atau nama kalian
-global.wait = '_*Tunggu sedang di proses...*_' // ini pesan simulasi loading
-global.eror = '_*Server Error*_' // ini pesan saat terjadi kesalahan
-global.stiker_wait = '*⫹⫺ Stiker sedang dibuat...*' // ini pesan simulasi saat loading pembuatan sticker
-global.packname = 'Made With' // watermark stikcker packname
-global.author = 'Bot WhatsApp' // watermark stikcker author
-global.maxwarn = '5' // Peringatan maksimum Warn
+global.owner = ['573133374132', '573133374132'] // debe estar lleno, no puede estar vacío
+global.mods  = ['573133374132', '573133374132'] // debe estar lleno, no puede estar vacío
+global.prems = ['573133374132', '573133374132'] // debe estar lleno, no puede estar vacío
+global.nameowner = 'yo soy yo' // debe estar lleno, no puede estar vacío
+global.numberowner = '573133374132' // debe estar lleno, no puede estar vacío
+global.mail = 'andrescamilovallejogomez701@gmail.com' // debe estar lleno, no puede estar vacío
+global.gc = '' // debe estar lleno, no puede estar vacío
+global.instagram = '' // debe estar lleno, no puede estar vacío
+global.wm = 'un bot en prueba' // completa el nombre del bot o tu nombre
+global.wait = '_*Espera, se está procesando....*_' //Este es un mensaje de simulación de carga.
+global.eror = '_*Error del servidor*_' // este es el mensaje cuando ocurre un error
+global.stiker_wait = '*⫹⫺ se está haciendo un Stiker...*' // Este es un mensaje de simulación al cargar la creación de stickers.
+global.packname = 'Hecho por yo soy yo' // nombre del paquete de adhesivo de marca de agua
+global.author = 'Bot WhatsApp' //autor del adhesivo de marca de agua
+global.maxwarn = '5' //Advertencia máxima Advertir
 
-global.autobio = false // Set true/false untuk mengaktifkan atau mematikan autobio (default: false)
-global.antiporn = false // Set true/false untuk Auto delete pesan porno (bot harus admin) (default: false)
-global.spam = false // Set true/false untuk anti spam (default: false)
-global.gcspam = false // Set true/false untuk menutup grup ketika spam (default: false)
+global.autobio = false // Establezca verdadero/falso para habilitar o deshabilitar la autobio (predeterminado: falso)
+global.antiporn = false // Establezca verdadero/falso para la eliminación automática de mensajes pornográficos (el robot debe ser administrador) (predeterminado: falso)
+global.spam = false // Establezca verdadero/falso para antispam (predeterminado: falso)
+global.gcspam = false // Establezca verdadero/falso para cerrar el grupo cuando sea spam (predeterminado: falso)
     
 
 // APIKEY INI WAJIB DI ISI! //
-global.btc = 'YOUR_APIKEY_HERE'
+global.btc = 'J8ygeswI'
 global.aksesKey = 'YOUR_AKSESKEY_HERE'
 // Daftar terlebih dahulu https://api.botcahx.eu.org
 
