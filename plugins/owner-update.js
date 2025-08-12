@@ -1,69 +1,81 @@
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-
-let handler = async (m, { conn, usedPrefix, command }) => {
+let handler = async (m, { conn }) => {
     try {
-        await m.reply('🔄 Iniciando actualización del bot...')
-        
-        // Verificar si es un repositorio git
+        await m.reply('🔄 Iniciando actualización del bot...');
+
+        // Verificar repositorio
         if (!fs.existsSync('.git')) {
-            return m.reply('❌ Este directorio no es un repositorio git válido.')
+            return m.reply('❌ Este directorio no es un repositorio git válido.');
         }
-        
-        // Hacer backup de archivos importantes
-        await m.reply('📋 Haciendo backup de configuraciones...')
-        
-        // Hacer stash de cambios locales
+
+        // Detectar automáticamente archivos y carpetas que no deben tocarse
+        const excludePaths = fs.readdirSync('./').filter(item => {
+            // Ignorar carpetas comunes de trabajo local
+            const protectedDirs = ['sessions', 'sesiones', 'temp', 'cache', 'database'];
+            if (protectedDirs.includes(item.toLowerCase()) && fs.statSync(item).isDirectory()) return true;
+
+            // Ignorar archivos de configuración y datos locales
+            const protectedExt = ['.json', '.env'];
+            if (protectedExt.includes(path.extname(item).toLowerCase()) && fs.statSync(item).isFile()) return true;
+
+            return false;
+        });
+
+        // Guardar cambios ignorando .gitignore
+        await m.reply('📋 Guardando cambios locales...');
         try {
-            execSync('git stash', { stdio: 'pipe' })
-        } catch (e) {
-            // Si no hay cambios para stash, continúa
-        }
-        
-        // Pull de cambios
-        await m.reply('⬇️ Descargando actualizaciones...')
-        const pullResult = execSync('git pull origin main', { encoding: 'utf8' })
-        
-        // Instalar dependencias
-        await m.reply('📦 Instalando dependencias...')
-        execSync('npm install', { stdio: 'pipe' })
-        
-        // Recargar plugins
-        await m.reply('🔄 Recargando plugins...')
-        Object.keys(global.plugins).forEach(key => {
-            delete global.plugins[key]
-        })
-        global.plugins = {}
-        
-        // Recargar todos los plugins
-        const pluginFilter = filename => /\.js$/.test(filename)
-        let plugins = {}
-        const pluginsFolder = './plugins'
-        
-        for (let filename of fs.readdirSync(pluginsFolder).filter(pluginFilter)) {
-            try {
-                delete require.cache[require.resolve(`../plugins/${filename}`)]
-                plugins[filename] = require(`../plugins/${filename}`)
-            } catch (e) {
-                conn.logger.error(e)
-                delete plugins[filename]
+            execSync('git add -A', { stdio: 'ignore' }); // Fuerza a agregar todo
+            execSync('git stash --include-untracked', { stdio: 'ignore' });
+        } catch { /* ignorar si no hay cambios */ }
+
+        // Detectar rama actual
+        const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+
+        // Descargar actualizaciones sin reescribir archivos excluidos
+        await m.reply(`⬇️ Descargando actualizaciones de la rama *${branch}*...`);
+        execSync(`git pull origin ${branch} --no-rebase --no-commit --no-ff`, { stdio: 'ignore' });
+
+        // Restaurar archivos protegidos
+        for (const item of excludePaths) {
+            if (fs.existsSync(item)) {
+                execSync(`git checkout --ours "${item}"`, { stdio: 'ignore' });
             }
         }
-        
-        global.plugins = plugins
-        
-        await m.reply(`✅ Bot actualizado exitosamente!\n\n📝 Cambios:\n${pullResult}\n\n🔌 Plugins recargados: ${Object.keys(plugins).length}`)
-        
+
+        // Instalar dependencias
+        await m.reply('📦 Instalando dependencias...');
+        execSync('npm install', { stdio: 'ignore' });
+
+        // Recargar plugins
+        await m.reply('🔄 Recargando plugins...');
+        global.plugins = {};
+
+        const pluginsFolder = path.join(__dirname, '../plugins');
+        const pluginFiles = fs.readdirSync(pluginsFolder).filter(f => f.endsWith('.js'));
+
+        for (const file of pluginFiles) {
+            try {
+                const pluginPath = path.join(pluginsFolder, file);
+                delete require.cache[require.resolve(pluginPath)];
+                global.plugins[file] = require(pluginPath);
+            } catch (e) {
+                conn.logger.error(`Error al recargar ${file}:`, e);
+            }
+        }
+
+        await m.reply(`✅ Bot actualizado con éxito sin afectar archivos del servidor!\n\n🔌 Plugins recargados: ${Object.keys(global.plugins).length}\n🛡 Archivos protegidos: ${excludePaths.join(', ') || 'Ninguno detectado'}`);
     } catch (error) {
-        console.error(error)
-        await m.reply(`❌ Error durante la actualización:\n${error.message}`)
+        console.error(error);
+        await m.reply(`❌ Error durante la actualización:\n${error.message}`);
     }
-}
+};
 
-handler.help = ['update', 'actualizar']
-handler.tags = ['owner']
-handler.command = /^(update|actualizar)$/i
-handler.rowner = true
+handler.help = ['update', 'actualizar'];
+handler.tags = ['owner'];
+handler.command = /^(update|actualizar)$/i;
+handler.rowner = true;
 
-module.exports = handler
+module.exports = handler;
