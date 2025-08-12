@@ -6,42 +6,43 @@ let handler = async (m, { conn }) => {
     try {
         await m.reply('🔄 Iniciando actualización del bot...');
 
-        // Verificar repositorio
+        // Verificar si es un repositorio Git
         if (!fs.existsSync('.git')) {
             return m.reply('❌ Este directorio no es un repositorio git válido.');
         }
 
-        // Detectar automáticamente archivos y carpetas que no deben tocarse
+        // Detectar automáticamente archivos/carpetas que no deben tocarse
         const excludePaths = fs.readdirSync('./').filter(item => {
-            // Ignorar carpetas comunes de trabajo local
             const protectedDirs = ['sessions', 'sesiones', 'temp', 'cache', 'database'];
-            if (protectedDirs.includes(item.toLowerCase()) && fs.statSync(item).isDirectory()) return true;
-
-            // Ignorar archivos de configuración y datos locales
             const protectedExt = ['.json', '.env'];
+            if (protectedDirs.includes(item.toLowerCase()) && fs.statSync(item).isDirectory()) return true;
             if (protectedExt.includes(path.extname(item).toLowerCase()) && fs.statSync(item).isFile()) return true;
-
             return false;
         });
 
         // Guardar cambios ignorando .gitignore
         await m.reply('📋 Guardando cambios locales...');
         try {
-            execSync('git add -A', { stdio: 'ignore' }); // Fuerza a agregar todo
+            execSync('git add -A', { stdio: 'ignore' }); // Fuerza incluir todo
             execSync('git stash --include-untracked', { stdio: 'ignore' });
         } catch { /* ignorar si no hay cambios */ }
 
-        // Detectar rama actual
+        // Detectar la rama actual
         const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
 
-        // Descargar actualizaciones sin reescribir archivos excluidos
+        // Descargar actualizaciones
         await m.reply(`⬇️ Descargando actualizaciones de la rama *${branch}*...`);
         execSync(`git pull origin ${branch} --no-rebase --no-commit --no-ff`, { stdio: 'ignore' });
 
-        // Restaurar archivos protegidos
+        // Restaurar archivos protegidos solo si están en conflicto
         for (const item of excludePaths) {
             if (fs.existsSync(item)) {
-                execSync(`git checkout --ours "${item}"`, { stdio: 'ignore' });
+                try {
+                    const status = execSync(`git status --porcelain "${item}"`, { encoding: 'utf8' });
+                    if (status.includes('UU') || status.includes('AA') || status.includes('DD')) {
+                        execSync(`git checkout --ours "${item}"`, { stdio: 'ignore' });
+                    }
+                } catch { /* ignorar si no hay conflicto */ }
             }
         }
 
