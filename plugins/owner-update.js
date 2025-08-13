@@ -4,7 +4,7 @@ const path = require('path');
 
 let handler = async (m, { conn }) => {
     try {
-        await m.reply('🔄 Iniciando actualización del bot...');
+        await m.reply('🦈💙 *Gawr Gura* está preparando su tridente... ¡Iniciando actualización desde la rama *pro*! 🌊');
 
         // Verificar si es un repositorio Git
         if (!fs.existsSync('.git')) {
@@ -23,15 +23,15 @@ let handler = async (m, { conn }) => {
         // Guardar cambios ignorando .gitignore
         await m.reply('📋 Guardando cambios locales...');
         try {
-            execSync('git add -A', { stdio: 'ignore' }); // Fuerza incluir todo
+            execSync('git add -A', { stdio: 'ignore' });
             execSync('git stash --include-untracked', { stdio: 'ignore' });
         } catch { /* ignorar si no hay cambios */ }
 
-        // Detectar la rama actual
-        const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+        // Usar siempre la rama 'pro'
+        const branch = 'pro';
 
         // Descargar actualizaciones
-        await m.reply(`⬇️ Descargando actualizaciones de la rama *${branch}*...`);
+        await m.reply(`⬇️ Descargando olas de código desde la rama *${branch}*... 🌊`);
         execSync(`git pull origin ${branch} --no-rebase --no-commit --no-ff`, { stdio: 'ignore' });
 
         // Restaurar archivos protegidos solo si están en conflicto
@@ -47,11 +47,11 @@ let handler = async (m, { conn }) => {
         }
 
         // Instalar dependencias
-        await m.reply('📦 Instalando dependencias...');
+        await m.reply('📦 Instalando tesoros perdidos (dependencias)... 🐚');
         execSync('npm install', { stdio: 'ignore' });
 
         // Recargar plugins
-        await m.reply('🔄 Recargando plugins...');
+        await m.reply('🔄 Gura está recargando sus habilidades (plugins)... 🦈');
         global.plugins = {};
 
         const pluginsFolder = path.join(__dirname, '../plugins');
@@ -67,7 +67,22 @@ let handler = async (m, { conn }) => {
             }
         }
 
-        await m.reply(`✅ Bot actualizado con éxito sin afectar archivos del servidor!\n\n🔌 Plugins recargados: ${Object.keys(global.plugins).length}\n🛡 Archivos protegidos: ${excludePaths.join(', ') || 'Ninguno detectado'}`);
+        // Mensaje final con decoración Gawr Gura
+        await m.reply(
+`╭━━━━━━━━━━━━━━━╮
+🌊🦈  *A C T U A L I Z A C I Ó N  C O M P L E T A*  🦈🌊
+╰━━━━━━━━━━━━━━━╯
+💙  Capitán, el bot ha sido actualizado con éxito.  
+🔌 *Plugins recargados:* ${Object.keys(global.plugins).length}  
+🛡 *Archivos protegidos:* ${excludePaths.join(', ') || 'Ninguno detectado'}  
+
+🐟  *Rama usada:* ${branch}  
+🌊  ¡Listo para navegar por mares de comandos!
+╭━━━━━━━━━━━━━━━╯
+  *~ Gawr Gura ~*
+╰━━━━━━━━━━━━━━━╯`
+        );
+
     } catch (error) {
         console.error(error);
         await m.reply(`❌ Error durante la actualización:\n${error.message}`);
