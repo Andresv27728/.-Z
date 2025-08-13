@@ -175,7 +175,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
                         mediaType: 1,
                         previewType: 0,
                         renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://files.catbox.moe/tr0lls.jpg',
+                        thumbnailUrl: 'https://files.fm/f/4qzvjz4xtm',
                         sourceUrl: 'https://whatsapp.com/channel/0029VbAmMiM96H4KgBHZUn1z'
                     }
                 }, 
@@ -253,7 +253,7 @@ y sumergirte en mi océano de opciones~ 🐟💙
                         mediaType: 1,
                         previewType: 0,
                         renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://files.catbox.moe/cwc3s7.jpg',
+                        thumbnailUrl: 'https://files.fm/f/4qzvjz4xtm',
                         sourceUrl: 'https://whatsapp.com/channel/0029VbAmMiM96H4KgBHZUn1z'
                     }
                 }, 
