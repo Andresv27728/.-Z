@@ -1,7 +1,10 @@
 let handler = async (m, { conn }) => {
-  conn.chatModify({ delete: true, lastMessages: [{ key: m.key, messageTimestamp: m.messageTimestamp }] }, m.chat)
-  let a = await m.reply("Successfully deleted this chat!")
-}
+  conn.chatModify(
+    { delete: true, lastMessages: [{ key: m.key, messageTimestamp: m.messageTimestamp }] },
+    m.chat
+  );
+  await m.reply("🗑️ ¡Chat eliminado con éxito!");
+};
 
 handler.help = ['deletechat'];
 handler.tags = ['owner'];
