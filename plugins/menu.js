@@ -102,7 +102,10 @@ Sumérgete en este océano de comandos y diviértete conmigo~!
     header: '┌  ◦ *%category*',
     body: '│  ◦ %cmd %islimit %isPremium',
     footer: '└  ',
-    after: `*Note:* Ketik .menu <category> untuk melihat menu spesifik\nContoh: .menu tools`
+    after: `*🦈💙 𝑵𝒐𝒕𝒂~ 💙🦈  
+Escribe *.menu <categoría>* para ver un menú específico 🫧  
+🌊 Ejemplo: *.menu tools*  
+¡Así podrás navegar mi océano de comandos más rápido, capitán~! 🐟`
 }
 
 let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
@@ -173,7 +176,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
                         previewType: 0,
                         renderLargerThumbnail: true,
                         thumbnailUrl: 'https://files.catbox.moe/tr0lls.jpg',
-                        sourceUrl: 'https://whatsapp.com/channel/0029Va8ZH8fFXUuc69TGVw1q'
+                        sourceUrl: 'https://whatsapp.com/channel/0029VbAmMiM96H4KgBHZUn1z'
                     }
                 }, 
                 mentions: [m.sender]
@@ -251,7 +254,7 @@ y sumergirte en mi océano de opciones~ 🐟💙
                         previewType: 0,
                         renderLargerThumbnail: true,
                         thumbnailUrl: 'https://files.catbox.moe/cwc3s7.jpg',
-                        sourceUrl: 'https://whatsapp.com/channel/0029Va8ZH8fFXUuc69TGVw1q'
+                        sourceUrl: 'https://whatsapp.com/channel/0029VbAmMiM96H4KgBHZUn1z'
                     }
                 }, 
                 mentions: [m.sender]
