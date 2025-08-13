@@ -88,7 +88,8 @@ const allTags = {
 const defaultMenu = {
     before: `
 Hi %name
-I am an automated system (WhatsApp Bot) that can help to do something, search and get data / information only through WhatsApp.
+Soy tu tiburoncita favorita lista para ayudarte~  
+Sumérgete en este océano de comandos y diviértete conmigo~!  
 
 ◦ *Library:* Baileys
 ◦ *Function:* Assistant
@@ -171,7 +172,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
                         mediaType: 1,
                         previewType: 0,
                         renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://telegra.ph/file/3a34bfa58714bdef500d9.jpg',
+                        thumbnailUrl: 'https://files.catbox.moe/tr0lls.jpg',
                         sourceUrl: 'https://whatsapp.com/channel/0029Va8ZH8fFXUuc69TGVw1q'
                     }
                 }, 
@@ -182,7 +183,12 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
         }
 
         if (!allTags[teks]) {
-            return m.reply(`Menu "${teks}" tidak tersedia.\nSilakan ketik ${_p}menu untuk melihat daftar menu.`)
+            return m.reply(`Menu "${teks}" 🦈💙 𝑶𝒐𝒐𝒐𝒑𝒔~ 💙🦈  
+El comando que buscas no está disponible... 🫧  
+Pero no te preocupes, capitán~ 🌊  
+Escribe *${_p}menu* para ver todos los comandos  
+y sumergirte en mi océano de opciones~ 🐟💙
+.`)
         }
 
         let menuCategory = defaultMenu.before + '\n\n'
@@ -244,7 +250,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
                         mediaType: 1,
                         previewType: 0,
                         renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://telegra.ph/file/3a34bfa58714bdef500d9.jpg',
+                        thumbnailUrl: 'https://files.catbox.moe/cwc3s7.jpg',
                         sourceUrl: 'https://whatsapp.com/channel/0029Va8ZH8fFXUuc69TGVw1q'
                     }
                 }, 
@@ -252,7 +258,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
             }
         }, {})
     } catch (e) {
-        conn.reply(m.chat, 'Maaf, menu sedang error', m)
+        conn.reply(m.chat, '🦈💙 𝑶𝒐𝒐𝒑𝒔~ 💙 Gomen gomen~ el menú tuvo un error... 🫧  Parece que las olas lo revolvieron todo 🌊  Intenta de nuevo en un momento, capitán~ 🐟  ¡Prometo que volverá a la normalidad! 💙', m)
         console.error(e)
     }
 }
