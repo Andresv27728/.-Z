@@ -25,13 +25,13 @@ let handler = async (m, { conn, command, usedPrefix }) => {
                     }
                 ]
             });
-            m.reply(`Sukses mengganti PP Bot`);
+            m.reply(`✅ *Éxito:* La foto de perfil del bot ha sido actualizada.`);
         } catch (e) {
             console.log(e);
-            m.reply(`Terjadi kesalahan, coba lagi nanti.`);
+            m.reply(`⚠️ Ocurrió un error inesperado. Intenta nuevamente más tarde.`);
         }
     } else {
-        m.reply(`Kirim gambar dengan caption *${usedPrefix + command}* atau tag gambar yang sudah dikirim`);
+        m.reply(`📸 Envía una *imagen* con el caption *${usedPrefix + command}* o responde a una imagen ya enviada.`);
     }
 };
 
