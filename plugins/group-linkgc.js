@@ -1,15 +1,32 @@
 let handler = async (m, { conn }) => {
   try {
-    conn.reply(m.chat, `*Link Group:* ${await conn.getName(m.chat)}\n\nhttps://chat.whatsapp.com/` + await conn.groupInviteCode(m.chat) + `\n\n${conn.user.name}`, m)
+    const groupName = await conn.getName(m.chat);
+    const inviteCode = await conn.groupInviteCode(m.chat);
+    
+    conn.reply(
+      m.chat,
+      `🦈💙 *Enlace del grupo* 💙🦈\n\n` +
+      `🌊 *Nombre:* ${groupName}\n` +
+      `🔗 *Invitación:* https://chat.whatsapp.com/${inviteCode}\n\n` +
+      `Bot: ${conn.user.name}`,
+      m
+    );
   } catch {
-    conn.reply(m.chat, `Jadikan @${conn.user.jid.split('@')[0]} sebagai admin untuk menggunakan perintah ini!`, m, { mentions: [conn.user.jid] })
+    conn.reply(
+      m.chat,
+      `⚠️ Debo ser *administrador* para poder generar el enlace, @${conn.user.jid.split('@')[0]}.\n\n` +
+      `🦈💙 ¡Hazme admin y nadaré hasta el link del grupo! 🌊`,
+      m,
+      { mentions: [conn.user.jid] }
+    );
   }
-}
-handler.help = ['linkgroup']
-handler.tags = ['group']
-handler.command = /^link(g(c)?ro?up)?$/i
+};
 
-handler.group = true
-handler.admin = true
+handler.help = ['linkgroup'];
+handler.tags = ['group'];
+handler.command = /^link(g(c)?ro?up)?$/i;
 
-module.exports = handler
+handler.group = true;
+handler.admin = true;
+
+module.exports = handler;
