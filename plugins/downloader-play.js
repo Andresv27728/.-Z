@@ -13,33 +13,30 @@ async function descargarSaveTube(videoUrl) {
   }
 }
 
-// Método 2: SnapSave (Snappea API no oficial)
-async function descargarSnapSave(videoUrl) {
+// Método 2: Yt5s.io (API web simulada)
+async function descargarYt5s(videoUrl) {
   try {
-    const res = await fetch(`https://api.snappea.com/v1/video/details?url=${encodeURIComponent(videoUrl)}`);
-    const j = await res.json();
-    if (j?.status === 'success') {
-      let audio = j.videoInfo?.audios?.[0]?.url;
-      if (audio) return { success: true, url: audio, api: 'SnapSave API', info: j };
+    const res = await fetch(`https://yt5s.io/api/ajaxSearch/index?url=${encodeURIComponent(videoUrl)}`);
+    if (!res.ok) throw new Error('Yt5s falló');
+    let json = await res.json();
+    if (json.links?.mp3?.mp3128?.k) {
+      return { success: true, url: json.links.mp3.mp3128.k, api: 'Yt5s.io', info: json };
     }
-    throw new Error('SnapSave falló');
+    throw new Error('No se encontró enlace en Yt5s');
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
 
-// Método 3: Yt5s.io API no oficial
-async function descargarYt5s(videoUrl) {
+// Método 3: Y2Mate (API web simulada)
+async function descargarY2Mate(videoUrl) {
   try {
-    const res = await fetch(`https://api.yt5s.io/api/ajaxSearch/index?url=${encodeURIComponent(videoUrl)}&lang=en`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    const j = await res.json();
-    if (j?.links?.mp3?.mp3128?.url) {
-      return { success: true, url: j.links.mp3.mp3128.url, api: 'Yt5s API', info: j };
-    }
-    throw new Error('Yt5s falló');
+    const res = await fetch(`https://www.y2mate.com/mates/analyzeV2/ajax?url=${encodeURIComponent(videoUrl)}`);
+    if (!res.ok) throw new Error('Y2Mate falló');
+    let json = await res.json();
+    let mp3 = json.links?.mp3?.['128']?.dlink;
+    if (mp3) return { success: true, url: mp3, api: 'Y2Mate', info: json };
+    throw new Error('No se encontró enlace en Y2Mate');
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -74,12 +71,11 @@ let handler = async (m, { conn, text }) => {
 
     await m.reply('⬇️ Descargando audio...');
 
-    // Probar métodos en orden
     let res = await descargarSaveTube(vid.url);
-    if (!res.success) res = await descargarSnapSave(vid.url);
     if (!res.success) res = await descargarYt5s(vid.url);
+    if (!res.success) res = await descargarY2Mate(vid.url);
     if (!res.success) res = await descargarYtDlp(vid.url);
-    if (!res.success) throw `Falló todo: ${res.error}`;
+    if (!res.success) throw `Fallaron todas las opciones: ${res.error}`;
 
     clearInterval(anim);
     await conn.sendMessage(m.chat, {
