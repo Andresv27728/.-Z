@@ -2,40 +2,44 @@ let search = require('yt-search');
 let fetch = require('node-fetch');
 const { exec } = require('child_process');
 
-// Método 1: Delirius API
-async function descargarDelirius(videoUrl) {
-  const apiUrl = `https://delirius-apiofc.vercel.app/download/ytmp3?url=${encodeURIComponent(videoUrl)}`;
-  try {
-    const res = await fetch(apiUrl);
-    const j = await res.json();
-    if (j.status && j.data?.download?.url) return { success: true, url: j.data.download.url, api: 'Delirius API', info: j.data };
-    throw new Error('Sin enlace válido');
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-// Método 2: SaveTube API (simulada)
+// Método 1: SaveTube (WEB scraping simulado)
 async function descargarSaveTube(videoUrl) {
   try {
-    const res = await fetch(`https://yt.savetube.me/api/ajax/search?query=${encodeURIComponent(videoUrl)}`);
-    const html = await res.text();
-    if (html.includes('mp3')) {
-      return { success: true, url: videoUrl, api: 'SaveTube (web)', info: {} };
-    }
+    const res = await fetch(`https://yt.savetube.me/youtube-to-mp3-download-fast?url=${encodeURIComponent(videoUrl)}`);
+    if (res.ok) return { success: true, url: videoUrl, api: 'SaveTube (web)', info: {} };
     throw new Error('SaveTube falló');
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
 
-// Método 3: yt-download.org API
-async function descargarYTDownload(videoUrl) {
+// Método 2: SnapSave (Snappea API no oficial)
+async function descargarSnapSave(videoUrl) {
   try {
-    const res = await fetch(`https://api.yt-download.org/download/${encodeURIComponent(videoUrl)}`);
-    const json = await res.json();
-    if (json?.link) return { success: true, url: json.link, api: 'yt-download.org', info: json };
-    throw new Error('yt-download.org falló');
+    const res = await fetch(`https://api.snappea.com/v1/video/details?url=${encodeURIComponent(videoUrl)}`);
+    const j = await res.json();
+    if (j?.status === 'success') {
+      let audio = j.videoInfo?.audios?.[0]?.url;
+      if (audio) return { success: true, url: audio, api: 'SnapSave API', info: j };
+    }
+    throw new Error('SnapSave falló');
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// Método 3: Yt5s.io API no oficial
+async function descargarYt5s(videoUrl) {
+  try {
+    const res = await fetch(`https://api.yt5s.io/api/ajaxSearch/index?url=${encodeURIComponent(videoUrl)}&lang=en`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const j = await res.json();
+    if (j?.links?.mp3?.mp3128?.url) {
+      return { success: true, url: j.links.mp3.mp3128.url, api: 'Yt5s API', info: j };
+    }
+    throw new Error('Yt5s falló');
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -44,7 +48,7 @@ async function descargarYTDownload(videoUrl) {
 // Método 4: yt-dlp local
 async function descargarYtDlp(videoUrl) {
   return new Promise((resolve) => {
-    exec(`yt-dlp -f bestaudio --extract-audio --audio-format mp3 -o - "${videoUrl}"`, { encoding: 'buffer', maxBuffer: 1024 * 500 }, (err, stdout) => {
+    exec(`yt-dlp -f bestaudio -o - "${videoUrl}"`, { encoding: 'buffer', maxBuffer: 1024 * 500 }, (err, stdout) => {
       if (err) return resolve({ success: false, error: err.message });
       resolve({ success: true, url: stdout, api: 'yt-dlp local', info: {} });
     });
@@ -70,9 +74,10 @@ let handler = async (m, { conn, text }) => {
 
     await m.reply('⬇️ Descargando audio...');
 
-    let res = await descargarDelirius(vid.url);
-    if (!res.success) res = await descargarSaveTube(vid.url);
-    if (!res.success) res = await descargarYTDownload(vid.url);
+    // Probar métodos en orden
+    let res = await descargarSaveTube(vid.url);
+    if (!res.success) res = await descargarSnapSave(vid.url);
+    if (!res.success) res = await descargarYt5s(vid.url);
     if (!res.success) res = await descargarYtDlp(vid.url);
     if (!res.success) throw `Falló todo: ${res.error}`;
 
@@ -82,7 +87,6 @@ let handler = async (m, { conn, text }) => {
       edit: spinnerMsg.key
     });
 
-    // Enviar info del video
     let desc = `
 *Titulo:* ${vid.title}
 *Duración:* ${vid.timestamp}
@@ -93,7 +97,6 @@ let handler = async (m, { conn, text }) => {
     `.trim();
     await conn.reply(m.chat, desc, m);
 
-    // Enviar audio
     await conn.sendMessage(m.chat, {
       audio: { url: res.url },
       mimetype: 'audio/mpeg'
