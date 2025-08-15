@@ -1,46 +1,49 @@
+// 🦈🌊✨ Comando Piedra, Papel o Tijera - Versión Gawr Gura ✨🌊🦈
 let handler = async (m, { text, usedPrefix }) => {
-    let salah = `Pilihan yang tersedia\n\ngunting, kertas, batu\n\n${usedPrefix}suit gunting\n\nkasih spasi!`
-    if (!text) throw salah
-    var astro = Math.random()
+    let errorMsg = `🌊💙 Opciones disponibles, kouhai~ 💙🌊\n\n🪨 piedra, ✂️ tijera, 📄 papel\n\nEjemplo: ${usedPrefix}suit piedra\n\n¡No olvides dejar un espacio después del comando! 🦈✨`
+    if (!text) throw errorMsg
+    
+    var guraChoice = Math.random()
 
-    if (astro < 0.34) {
-        astro = 'batu'
-    } else if (astro > 0.34 && astro < 0.67) {
-        astro = 'gunting'
+    if (guraChoice < 0.34) {
+        guraChoice = 'piedra'
+    } else if (guraChoice > 0.34 && guraChoice < 0.67) {
+        guraChoice = 'tijera'
     } else {
-        astro = 'kertas'
+        guraChoice = 'papel'
     }
 
-    //menentukan rules
-    if (text == astro) {
-        m.reply(`Seri!\nkamu: ${text}\nBot: ${astro}`)
-    } else if (text == 'batu') {
-        if (astro == 'gunting') {
+    // 🌊💙 Reglas del juego estilo Gawr Gura 💙🌊
+    if (text == guraChoice) {
+        m.reply(`🤝 ¡Empate, desu~! 🦈✨\nTú: ${text}\nGuraBot: ${guraChoice}`)
+    } else if (text == 'piedra') {
+        if (guraChoice == 'tijera') {
             global.db.data.users[m.sender].money += 1000
-            m.reply(`Kamu menang! +Rp1000\nKamu: ${text}\nBot: ${astro}`)
+            m.reply(`🏆💙 ¡Ganaste, nya~! +💰1000 monedas Gura\nTú: ${text}\nGuraBot: ${guraChoice}`)
         } else {
-            m.reply(`Kamu kalah!\nkamu: ${text}\nBot: ${astro}`)
+            m.reply(`😢 Oh no... perdiste, bubby~\nTú: ${text}\nGuraBot: ${guraChoice}`)
         }
-    } else if (text == 'gunting') {
-        if (astro == 'kertas') {
+    } else if (text == 'tijera') {
+        if (guraChoice == 'papel') {
             global.db.data.users[m.sender].money += 1000
-            m.reply(`Kamu menang! +Rp1000\nKamu: ${text}\nBot: ${astro}`)
+            m.reply(`🏆💙 ¡Ganaste, nya~! +💰1000 monedas Gura\nTú: ${text}\nGuraBot: ${guraChoice}`)
         } else {
-            m.reply(`Kamu kalah!\nkamu: ${text}\nBot: ${astro}`)
+            m.reply(`😢 Oh no... perdiste, bubby~\nTú: ${text}\nGuraBot: ${guraChoice}`)
         }
-    } else if (text == 'kertas') {
-        if (astro == 'batu') {
+    } else if (text == 'papel') {
+        if (guraChoice == 'piedra') {
             global.db.data.users[m.sender].money += 1000
-            m.reply(`Kamu menang! +Rp1000\nKamu: ${text}\nBot: ${astro}`)
+            m.reply(`🏆💙 ¡Ganaste, nya~! +💰1000 monedas Gura\nTú: ${text}\nGuraBot: ${guraChoice}`)
         } else {
-            m.reply(`Kamu kalah!\nkamu: ${text}\nBot: ${astro}`)
+            m.reply(`😢 Oh no... perdiste, bubby~\nTú: ${text}\nGuraBot: ${guraChoice}`)
         }
     } else {
-        throw salah
+        throw errorMsg
     }
 }
+
 handler.help = ['suit']
-handler.tags = ['game']
+handler.tags = ['juegos']
 handler.command = /^(suit)$/i
 
 module.exports = handler
