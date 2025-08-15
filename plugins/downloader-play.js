@@ -1,86 +1,124 @@
-let search = require('yt-search');
-let fetch = require('node-fetch');
+import fetch from 'node-fetch';
+import ytdl from 'ytdl-core';
+import yts from 'yt-search';
 
-let handler = async (m, { conn, text, usedPrefix }) => {
-    if (!text) throw `🎵 Ingresa el título o enlace de YouTube.\n\nEjemplo:\n${usedPrefix}play Shape of You`;
-    
+// 🔹 Lista de APIs para descarga de MP3
+const primaryAPI = (url) => `https://theadonix-api.vercel.app/api/ytmp3?url=${encodeURIComponent(url)}`;
+const backupAPI = (url) => `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`;
+
+// 🔹 Lista de 10 API keys gratuitas para búsqueda
+const API_KEYS = [
+  'AIzaSyA3-PRUEBA3',
+  'AIzaSyA4-PRUEBA4',
+  'AIzaSyA5-PRUEBA5',
+  'AIzaSyA6-PRUEBA6',
+  'AIzaSyA7-PRUEBA7',
+  'AIzaSyA8-PRUEBA8',
+  'AIzaSyA9-PRUEBA9',
+  'AIzaSyA10-PRUEBA10'
+];
+
+// Función para obtener una API key aleatoria
+function getRandomApiKey() {
+  return API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
+}
+
+const handler = async (m, { conn, args, usedPrefix }) => {
+  if (!args[0]) {
+    return conn.reply(m.chat, `✏️ Ingresa un título para buscar en YouTube.\n\nEjemplo:\n> ${usedPrefix}play Corazón Serrano - Mix Poco Yo`, m);
+  }
+
+  await m.react('🔍');
+  await conn.sendMessage(m.chat, { 
+    text: `⏳ *Buscando...*\n🔎 ${args.join(" ")}\n_Por favor espera un momento..._`, 
+  }, { quoted: m });
+
+  try {
+    let videoInfo;
+
+    // 1️⃣ Intentar búsqueda con API oficial de YouTube
     try {
-        // Animación de carga
-        let frames = ['🔍 Buscando.', '🔍 Buscando..', '🔍 Buscando...'];
-        let msg = await conn.reply(m.chat, frames[0], m);
-        let frameIndex = 0;
-        let interval = setInterval(async () => {
-            frameIndex = (frameIndex + 1) % frames.length;
-            await conn.sendMessage(m.chat, { edit: frames[frameIndex], editMessageId: msg.key.id });
-        }, 500);
+      const API_KEY = getRandomApiKey();
+      const searchURL = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(args.join(" "))}&key=${API_KEY}`;
+      const res = await fetch(searchURL);
+      const data = await res.json();
 
-        // Búsqueda en YouTube
-        const look = await search(text);
-        const convert = look.videos[0];
-        if (!convert) throw '⚠️ No se encontró ningún resultado.';
-        if (convert.seconds >= 3600) {
-            clearInterval(interval);
-            return conn.reply(m.chat, '⚠️ El video dura más de 1 hora, no se puede descargar.', m);
-        }
-
-        let audioUrl;
-        try {
-            const res = await fetch(`https://api.botcahx.eu.org/api/dowloader/yt?url=${convert.url}&apikey=${btc}`);
-            audioUrl = await res.json();
-        } catch {
-            clearInterval(interval);
-            return conn.reply(m.chat, '❌ Error al descargar el audio.', m);
-        }
-
-        // Detener animación
-        clearInterval(interval);
-
-        // Información del video
-        let caption = `
-🎵 *Título:* ${convert.title}
-📂 *Formato:* MP3
-🆔 *ID:* ${convert.videoId}
-⏳ *Duración:* ${convert.timestamp}
-👁️ *Vistas:* ${convert.views}
-📅 *Subido:* ${convert.ago}
-👤 *Autor:* ${convert.author.name}
-🔗 *Canal:* ${convert.author.url}
-🌐 *Enlace:* ${convert.url}
-📝 *Descripción:* ${convert.description}
-`.trim();
-
-        // Enviar info
-        await conn.sendMessage(m.chat, { text: caption, contextInfo: {
-            externalAdReply: {
-                title: convert.title,
-                mediaType: 1,
-                previewType: 0,
-                renderLargerThumbnail: true,
-                thumbnailUrl: convert.image,
-                sourceUrl: convert.url
-            }
-        }}, { quoted: m });
-
-        // Enviar audio
-        await conn.sendMessage(m.chat, {
-            audio: { url: audioUrl.result.mp3 },
-            mimetype: 'audio/mpeg',
-            contextInfo: {
-                externalAdReply: {
-                    title: convert.title,
-                    thumbnailUrl: convert.image,
-                    sourceUrl: convert.url,
-                    renderLargerThumbnail: true
-                }
-            }
-        }, { quoted: m });
-
-    } catch (e) {
-        conn.reply(m.chat, '❌ Ocurrió un error al procesar la solicitud.', m);
+      if (data.items && data.items.length) {
+        const video = data.items[0];
+        videoInfo = {
+          title: video.snippet.title,
+          url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+          thumbnail: video.snippet.thumbnails.high.url
+        };
+      } else {
+        throw new Error('Sin resultados API oficial');
+      }
+    } catch (err) {
+      console.warn('⚠️ Error en API oficial, usando yt-search:', err.message);
+      const results = await yts(args.join(" "));
+      if (!results.videos.length) throw new Error('No se encontraron resultados en yt-search');
+      const video = results.videos[0];
+      videoInfo = {
+        title: video.title,
+        url: video.url,
+        thumbnail: video.thumbnail
+      };
     }
+
+    // 2️⃣ Descargar miniatura
+    const thumbnail = await (await fetch(videoInfo.thumbnail)).buffer();
+
+    // 3️⃣ Enviar información del video
+    await conn.sendMessage(m.chat, {
+      image: thumbnail,
+      caption: `🎥 *Video encontrado*\n📌 Título: ${videoInfo.title}\n🔗 Enlace: ${videoInfo.url}`,
+    }, { quoted: m });
+
+    // 4️⃣ Animación de carga
+    const loadingMsg = await conn.sendMessage(m.chat, { text: '🎶 Descargando audio...\n[▒▒▒▒▒▒▒▒▒▒] 0%' }, { quoted: m });
+    const progress = ['[██▒▒▒▒▒▒▒▒▒] 20%', '[████▒▒▒▒▒▒▒▒] 40%', '[██████▒▒▒▒▒▒] 60%', '[████████▒▒▒▒] 80%', '[██████████] 100%'];
+    for (let i = 0; i < progress.length; i++) {
+      await new Promise(res => setTimeout(res, 600));
+      await conn.sendMessage(m.chat, { edit: loadingMsg.key, text: `🎶 Descargando audio...\n${progress[i]}` });
+    }
+
+    // 5️⃣ Descargar audio usando APIs externas
+    let audioUrl;
+    try {
+      const apiRes = await fetch(primaryAPI(videoInfo.url));
+      const json = await apiRes.json();
+      if (json.status && json.result?.download_url) {
+        audioUrl = json.result.download_url;
+      } else throw new Error('Fallo API primaria');
+    } catch {
+      console.warn('⚠️ API primaria falló, intentando con backup...');
+      const apiRes = await fetch(backupAPI(videoInfo.url));
+      const json = await apiRes.json();
+      if (json.status && json.result?.download_url) {
+        audioUrl = json.result.download_url;
+      } else throw new Error('Fallo API secundaria');
+    }
+
+    if (!audioUrl) throw new Error('No se pudo obtener el audio');
+
+    // 6️⃣ Enviar audio MP3
+    await conn.sendMessage(m.chat, {
+      audio: { url: audioUrl },
+      mimetype: 'audio/mpeg',
+      fileName: `${videoInfo.title}.mp3`
+    }, { quoted: m });
+
+    await m.react('✅');
+
+  } catch (e) {
+    console.error(e);
+    await m.react('❌');
+    conn.reply(m.chat, '❗ Ocurrió un error al buscar o enviar el audio.', m);
+  }
 };
 
-handler.command = handler.help = ['play', 'song', 'ds'];
-handler.tags = ['downloader'];
-handler.limit = true;
-module.exports = handler;
+handler.help = ['play'];
+handler.tags = ['descargas'];
+handler.command = ['play'];
+
+export default handler;
