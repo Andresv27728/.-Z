@@ -1,97 +1,116 @@
 let search = require('yt-search');
 let fetch = require('node-fetch');
+const { exec } = require('child_process');
 
-async function descargarConDelirius(videoUrl) {
-    try {
-        const apiUrl = `https://delirius-apiofc.vercel.app/download/ytmp3?url=${encodeURIComponent(videoUrl)}`;
-        const respuesta = await fetch(apiUrl);
-        const datos = await respuesta.json();
+// Método 1: Delirius API
+async function descargarDelirius(videoUrl) {
+  const apiUrl = `https://delirius-apiofc.vercel.app/download/ytmp3?url=${encodeURIComponent(videoUrl)}`;
+  try {
+    const res = await fetch(apiUrl);
+    const j = await res.json();
+    if (j.status && j.data?.download?.url) return { success: true, url: j.data.download.url, api: 'Delirius API', info: j.data };
+    throw new Error('Sin enlace válido');
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
 
-        if (datos.status && datos.data && datos.data.download && datos.data.download.url) {
-            return { 
-                exito: true, 
-                url: datos.data.download.url, 
-                api: 'Delirius API', 
-                info: datos.data 
-            };
-        } else {
-            throw new Error('No se pudo obtener el enlace de descarga.');
-        }
-    } catch (error) {
-        return { exito: false, error: error.message };
+// Método 2: SaveTube API (simulada)
+async function descargarSaveTube(videoUrl) {
+  try {
+    const res = await fetch(`https://yt.savetube.me/api/ajax/search?query=${encodeURIComponent(videoUrl)}`);
+    const html = await res.text();
+    if (html.includes('mp3')) {
+      return { success: true, url: videoUrl, api: 'SaveTube (web)', info: {} };
     }
+    throw new Error('SaveTube falló');
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// Método 3: yt-download.org API
+async function descargarYTDownload(videoUrl) {
+  try {
+    const res = await fetch(`https://api.yt-download.org/download/${encodeURIComponent(videoUrl)}`);
+    const json = await res.json();
+    if (json?.link) return { success: true, url: json.link, api: 'yt-download.org', info: json };
+    throw new Error('yt-download.org falló');
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// Método 4: yt-dlp local
+async function descargarYtDlp(videoUrl) {
+  return new Promise((resolve) => {
+    exec(`yt-dlp -f bestaudio --extract-audio --audio-format mp3 -o - "${videoUrl}"`, { encoding: 'buffer', maxBuffer: 1024 * 500 }, (err, stdout) => {
+      if (err) return resolve({ success: false, error: err.message });
+      resolve({ success: true, url: stdout, api: 'yt-dlp local', info: {} });
+    });
+  });
 }
 
 let handler = async (m, { conn, text }) => {
-    if (!text) throw '❗ Ingresa un título o enlace de YouTube';
+  if (!text) throw '❗ Ingresa un título o enlace de YouTube';
 
-    try {
-        await m.reply('🔍 Buscando tu canción...');
+  let spinnerFrames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
+  let spinnerMsg = await conn.reply(m.chat, '⏳ Iniciando descarga...', m);
+  let idx = 0;
+  let anim = setInterval(async () => {
+    await conn.sendMessage(m.chat, { text: `${spinnerFrames[idx]} Procesando...`, edit: spinnerMsg.key });
+    idx = (idx + 1) % spinnerFrames.length;
+  }, 200);
 
-        const busqueda = await search(text);
-        const video = busqueda.videos[0];
+  try {
+    await m.reply('🔍 Buscando tu canción...');
+    const vid = (await search(text)).videos[0];
+    if (!vid) throw '🚫 No se encontró el video';
+    if (vid.seconds >= 3600) throw '⚠️ El video dura más de 1 hora';
 
-        if (!video) throw '❌ Video no encontrado';
-        if (video.seconds >= 3600) throw '⚠️ El video dura más de 1 hora';
+    await m.reply('⬇️ Descargando audio...');
 
-        await m.reply('⏳ Descargando audio, por favor espera...');
+    let res = await descargarDelirius(vid.url);
+    if (!res.success) res = await descargarSaveTube(vid.url);
+    if (!res.success) res = await descargarYTDownload(vid.url);
+    if (!res.success) res = await descargarYtDlp(vid.url);
+    if (!res.success) throw `Falló todo: ${res.error}`;
 
-        const resultado = await descargarConDelirius(video.url);
-        if (!resultado.exito) throw `Error: ${resultado.error}`;
+    clearInterval(anim);
+    await conn.sendMessage(m.chat, {
+      text: '✅ Descarga completada, enviando audio...',
+      edit: spinnerMsg.key
+    });
 
-        let descripcion = `
-📺 *Título:* ${resultado.info.title}
-🆔 *ID:* ${resultado.info.id}
-⏱️ *Duración:* ${video.timestamp}
-👁️ *Vistas:* ${resultado.info.views}
-👍 *Likes:* ${resultado.info.likes}
-👤 *Autor:* ${resultado.info.author}
-📅 *Subido:* ${video.ago}
-🔗 *URL:* ${video.url}
-🎵 *Calidad:* ${resultado.info.download.quality}
-💾 *Tamaño:* ${resultado.info.download.size}
-        `.trim();
+    // Enviar info del video
+    let desc = `
+*Titulo:* ${vid.title}
+*Duración:* ${vid.timestamp}
+*Visualizaciones:* ${vid.views.toLocaleString()}
+*Subido:* ${vid.ago}
+*Autor:* ${vid.author.name}
+*API usada:* ${res.api}
+    `.trim();
+    await conn.reply(m.chat, desc, m);
 
-        await conn.relayMessage(m.chat, {
-            extendedTextMessage: {
-                text: descripcion,
-                contextInfo: {
-                    externalAdReply: {
-                        title: video.title,
-                        mediaType: 1,
-                        renderLargerThumbnail: true,
-                        thumbnailUrl: resultado.info.image,
-                        sourceUrl: video.url
-                    }
-                }
-            }
-        }, {});
+    // Enviar audio
+    await conn.sendMessage(m.chat, {
+      audio: { url: res.url },
+      mimetype: 'audio/mpeg'
+    }, { quoted: m });
 
-        await conn.sendMessage(m.chat, {
-            audio: { url: resultado.url },
-            mimetype: 'audio/mpeg',
-            contextInfo: {
-                externalAdReply: {
-                    title: video.title,
-                    body: 'Descargado con Delirius API',
-                    thumbnailUrl: resultado.info.image,
-                    sourceUrl: video.url,
-                    mediaType: 1,
-                    renderLargerThumbnail: true
-                }
-            }
-        }, { quoted: m });
+    await m.reply('✅ ¡Audio enviado con éxito!');
 
-        await m.reply('✅ ¡Audio descargado y enviado exitosamente!');
-    } catch (error) {
-        console.error(error);
-        conn.reply(m.chat, `❌ *Error:* ${error.message || error}`, m);
-    }
+  } catch (e) {
+    clearInterval(anim);
+    await conn.reply(m.chat, `❌ Error: ${e.message || e}`, m);
+  }
+
+  m.exp = 0;
 };
 
-handler.command = handler.help = ['play', 'cancion', 'descargar', 'song'];
-handler.tags = ['descargador'];
+handler.command = handler.help = ['play','cancion','song','descargar'];
+handler.tags = ['descarga'];
 handler.exp = 0;
 handler.limit = true;
-
 module.exports = handler;
