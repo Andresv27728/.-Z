@@ -3,7 +3,14 @@ module.exports = {
     if (global.autobio) {
       setInterval(async () => {
         let uptime = process.uptime() * 1000;
-        let bio = `🦈💙 𝑩𝒐𝒕 𝑨𝒄𝒕𝒊𝒗𝒐 💙🦈 🌊 En servicio durante: ${clockString(uptime)} | 💌 by: ${wm}`;
+        let frases = [
+          "🦈💙 A~ Gura time!",
+          "🌊 Hicimos yaaa~",
+          "🦈 Shork energy activated!",
+          "💙 Siempre activa para ti, desu~",
+          "🌊 Bloop bloop... en servicio!"
+        ];
+        let bio = `🦈💙 ${pickRandom(frases)} 🌊 | Uptime: ${clockString(uptime)} | 💌 by: ${wm}`;
         await this.updateProfileStatus(bio).catch(_ => _);
       }, 60000);
     }
