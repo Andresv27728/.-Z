@@ -1,3 +1,8 @@
+// ─────────────── ⋆⋅☆⋅⋆ ───────────────
+// 🌊🐟  Handler HideTag - Gawr Gura Bot 🐟🌊
+// "a~ anuncio secreto bajo el océano" 🦈
+// ─────────────── ⋆⋅☆⋅⋆ ───────────────
+
 const { generateWAMessageFromContent } = require('@adiwajshing/baileys')
 
 let handler = async (m, { conn, text, usedPrefix, command, participants }) => {
@@ -5,10 +10,12 @@ let handler = async (m, { conn, text, usedPrefix, command, participants }) => {
     let mime = (q.msg || q).mimetype || q.mediaType || ''
     text = text || (q.text || q.caption || q.description || '')
 
+    // 🐚 Si no hay texto ni archivo → ejemplo de uso
     if (!text && !mime) {
-        throw `Example: ${usedPrefix + command} <text>\n\nReply to a message (image, video, audio, sticker) to include it in the announcement.`
+        throw `✨ Ejemplo: ${usedPrefix + command} <texto>\n\nResponde a un mensaje (imagen, video, audio, sticker) para incluirlo en el anuncio secreto 🌊`
     }
 
+    // 🎐 Contacto falso usado como quote (estilo escondido bajo el mar)
     const fkontak = {
         key: {
             participants: "0@s.whatsapp.net",
@@ -24,9 +31,10 @@ let handler = async (m, { conn, text, usedPrefix, command, participants }) => {
         participant: "0@s.whatsapp.net"
     }
 
+    // 🐋 Si el mensaje es imagen/video/audio → enviamos con @everyone oculto
     if (/image|video|audio/.test(mime)) {
         let media = await q.download?.()
-        if (!media) throw 'Failed to download media.'
+        if (!media) throw '❌ No se pudo descargar el archivo, glub glub~'
 
         let msgOptions = {
             [mime.includes('image') ? 'image' : mime.includes('video') ? 'video' : 'audio']: media,
@@ -39,21 +47,31 @@ let handler = async (m, { conn, text, usedPrefix, command, participants }) => {
         }
 
         await conn.sendMessage(m.chat, msgOptions, { quoted: fkontak })
+
+    // 🐠 Si es sticker → lo mandamos con oculto también
     } else if (/sticker/.test(mime)) {
         let media = await q.download?.()
-        if (!media) throw 'Failed to download sticker.'
+        if (!media) throw '❌ No se pudo descargar el sticker, a~'
         await conn.sendMessage(m.chat, { sticker: media, mentions: participants.map(a => a.id) }, { quoted: fkontak })
+
+    // 🦈 Si es solo texto → lo mandamos a todos sin que se note
     } else {
         await conn.sendMessage(m.chat, { text: text, mentions: participants.map(a => a.id) }, { quoted: fkontak })
     }
 }
 
-handler.help = ['hidetag <text>']
+// 📖 Ayuda y configuración
+handler.help = ['hidetag <texto>'] // 🦈 Anuncio oculto
 handler.tags = ['group']
 handler.command = /^(hidetag|ht|h)$/i
 
+// ⚙️ Requiere grupo y admin
 handler.group = true
 handler.admin = true
 handler.botAdmin = true
 
 module.exports = handler
+
+// ─────────────── ⋆⋅☆⋅⋆ ───────────────
+// Gawr Gura: "Glub glub~ anuncio secreto enviado 🐟✨"
+// ─────────────── ⋆⋅☆⋅⋆ ───────────────
