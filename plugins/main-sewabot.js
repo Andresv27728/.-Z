@@ -1,22 +1,40 @@
 let handler = async (m, { conn, command }) => {
-    let txt = `*[ Chat Dengan Creator ]*
-wa.me/${numberowner}
+    let txt = `
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣠⣾⡿⠛⠉⠀⠀⠀⠀⠉⠙⠻⣷⣄⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⣴⣿⠏⠀⠀⠀🦈 GURA 🦈⠀⠀⠙⣿⣦⠀⠀
+⠀⠀⠀⠀⠀⣸⣿⡏⠀⠀⠀💙💦 A~~ ⛵ 💦💙⠀⠀⢹⣿⣇⠀
+⠀⠀⠀⠀⠀⠘⢿⣿⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣿⡿⠃⠀
+⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⢿⣿⣶⣶⣶⣶⣿⡿⠿⠛⠉⠀⠀⠀
 
-╔╣ *PREMIUM USER*
-║ • 10.000 Limit
-║ • Full Akses Chat
-╚══╣ *Harga :* Rp.10.000 / bulan
+╔═══════✦✧✦═══════╗
+      🦈💙 *GAWR GURA BOT* 💙🦈
+╚═══════✦✧✦═══════╝
 
-╔╣ *SEWA BOT*
-║ • Dapat Premium
-║ • Bebas Invit ke 1 Grup
-╚══╣ *Harga :* Rp.15.000 / bulan
+👤 *Habla con el Creador*  
+📞 wa.me/${numberowner}
 
-- Pembayaran via *OVO / Dana / GoPay, Qris, Bank*
-  *( tidak ada opsi lain )*
-  ke nomor ${numberowner}
-- Whatsapp Multi Device
-- Run via Panel (Always ON)`;
+🌊──────────────🌊
+🪸 *USUARIO PREMIUM* 🪸
+╔╣ 🐚 10.000 Límite  
+║ 🐠 Acceso completo al chat  
+╚══╣ 💵 *Precio:* Rp.10.000 / mes
+🌊──────────────🌊
+
+🪸 *ALQUILER DEL BOT* 🪸
+╔╣ 🐟 Incluye Premium  
+║ 🐳 Invitación libre a 1 grupo  
+╚══╣ 💵 *Precio:* cop.15.000 / mes
+🌊──────────────🌊
+
+⚓ *Métodos de pago*  
+• 🐚 Nequi / PayPal   
+📌 *(No hay otras opciones)*  
+👉 Número: ${numberowner}
+
+📡 WhatsApp Multi Dispositivo  
+🦈 Siempre activo con Panel (Always ON)
+`;
 
     try {
         await conn.relayMessage(m.chat, {
