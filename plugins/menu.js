@@ -17,77 +17,50 @@ let fetch = require('node-fetch')
 let moment = require('moment-timezone')
 let levelling = require('../lib/levelling')
 let arrayMenu = [
-  'all', 
-  'ai', 
-  'main', 
-  'downloader', 
-  'database', 
-  'rpg',
-  'rpgG', 
-  'sticker', 
-  'advanced', 
-  'xp', 
-  'fun', 
-  'game', 
-  'github', 
-  'group', 
-  'image', 
-  'nsfw', 
-  'info', 
-  'internet', 
-  'islam', 
-  'kerang', 
-  'maker', 
-  'news', 
-  'owner', 
-  'voice', 
-  'quotes', 
-  'store', 
-  'stalk', 
-  'shortlink', 
-  'tools', 
-  'anonymous',
-  ''
-  ];
-
+  'all', 'ai', 'main', 'downloader', 'database', 'rpg','rpgG', 'sticker', 
+  'advanced', 'xp', 'fun', 'game', 'github', 'group', 'image', 'nsfw', 
+  'info', 'internet', 'islam', 'kerang', 'maker', 'news', 'owner', 'voice', 
+  'quotes', 'store', 'stalk', 'shortlink', 'tools', 'anonymous',''
+];
 
 const allTags = {
-    'all': 'SEMUA MENU',
-    'ai': 'MENU AI',
-    'main': 'MENU UTAMA',
-    'downloader': 'MENU DOWNLOADER',
-    'database': 'MENU DATABASE',
-    'rpg': 'MENU RPG',
-    'rpgG': 'MENU RPG GUILD',
-    'sticker': 'MENU CONVERT',
-    'advanced': 'ADVANCED',
-    'xp': 'MENU EXP',
-    'fun': 'MENU FUN',
-    'game': 'MENU GAME',
-    'github': 'MENU GITHUB',
-    'group': 'MENU GROUP',
-    'image': 'MENU IMAGE',
-    'nsfw': 'MENU NSFW',
-    'info': 'MENU INFO',
+    'all': 'TODOS LOS MENÚS',
+    'ai': 'MENÚ AI',
+    'main': 'MENÚ PRINCIPAL',
+    'downloader': 'MENÚ DOWNLOADER',
+    'database': 'MENÚ BASE DE DATOS',
+    'rpg': 'MENÚ RPG',
+    'rpgG': 'MENÚ RPG GUILD',
+    'sticker': 'MENÚ CONVERT',
+    'advanced': 'AVANZADO',
+    'xp': 'MENÚ EXP',
+    'fun': 'MENÚ FUN',
+    'game': 'MENÚ JUEGOS',
+    'github': 'MENÚ GITHUB',
+    'group': 'MENÚ GRUPOS',
+    'image': 'MENÚ IMÁGENES',
+    'nsfw': 'MENÚ NSFW',
+    'info': 'MENÚ INFO',
     'internet': 'INTERNET',
-    'islam': 'MENU ISLAMI',
-    'kerang': 'MENU KERANG',
-    'maker': 'MENU MAKER',
-    'news': 'MENU NEWS',
-    'owner': 'MENU OWNER',
-    'voice': 'PENGUBAH SUARA',
-    'quotes': 'MENU QUOTES',
-    'store': 'MENU STORE',
-    'stalk': 'MENU STALK',
+    'islam': 'MENÚ ISLAMI',
+    'kerang': 'MENÚ CONCHAS',
+    'maker': 'MENÚ MAKER',
+    'news': 'MENÚ NEWS',
+    'owner': 'MENÚ OWNER',
+    'voice': 'CAMBIO DE VOZ',
+    'quotes': 'MENÚ FRASES',
+    'store': 'MENÚ TIENDA',
+    'stalk': 'MENÚ STALK',
     'shortlink': 'SHORT LINK',
-    'tools': 'MENU TOOLS',
-    'anonymous': 'ANONYMOUS CHAT',
-    '': 'NO CATEGORY'
+    'tools': 'MENÚ HERRAMIENTAS',
+    'anonymous': 'CHAT ANÓNIMO',
+    '': 'SIN CATEGORÍA'
 }
 
 const defaultMenu = {
     before: `
-Hi %name
+%ascii
+Hola %name
 Soy tu tiburoncita favorita lista para ayudarte~  
 Sumérgete en este océano de comandos y diviértete conmigo~!  
 
@@ -95,18 +68,55 @@ Sumérgete en este océano de comandos y diviértete conmigo~!
 ◦ *Function:* Assistant
 
 ┌  ◦ Uptime : %uptime
-│  ◦ Tanggal : %date
-│  ◦ Waktu : %time
-└  ◦ Prefix Used : *[ %p ]*
+│  ◦ Fecha : %date
+│  ◦ Hora : %time
+└  ◦ Prefijo Usado : *[ %p ]*
 `.trimStart(),
     header: '┌  ◦ *%category*',
     body: '│  ◦ %cmd %islimit %isPremium',
     footer: '└  ',
-    after: `*🦈💙 𝑵𝒐𝒕𝒂~ 💙🦈  
+    after: `*🦈💙 Nota~ 💙🦈  
 Escribe *.menu <categoría>* para ver un menú específico 🫧  
 🌊 Ejemplo: *.menu tools*  
 ¡Así podrás navegar mi océano de comandos más rápido, capitán~! 🐟`
 }
+
+// 10 variantes de ASCII aleatorias
+const asciiVariants = [
+`⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀
+⠀⠀⣠⣾⡿⠛⠉⠀🦈 GURA 🦈⠀⠙⣿⣦
+💙 Bienvenido a mi menú 💙`,
+
+`╔═💙🦈════════╗
+     Gawr Gura Menu
+╚════════💙🦈═╝`,
+
+`🐠🐠🐠🐠🐠
+🦈 *Gura Bot* 🦈
+🐠🐠🐠🐠🐠`,
+
+`╭───🌊💙🦈────╮
+   Menú de comandos
+╰─────────────╯`,
+
+`🎐🌊🦈 GURA BOT 🦈🌊🎐`,
+
+`╔═════💦🦈════╗
+    GAWR GURA
+╚═════💦🦈════╝`,
+
+`⛵🌊🦈 *Gura Bot* 🦈🌊⛵`,
+
+`╭────🌊🦈────╮
+  🐚 GAWR GURA BOT 🐚
+╰────────────╯`,
+
+`🌊🦈🐟 *Menú Gura* 🐟🦈🌊`,
+
+`╔══💙🦈═══🌊╗
+   GAWR GURA BOT
+╚═══════════╝`
+]
 
 let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
     try {
@@ -117,7 +127,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
         let teks = args[0] || ''
         
         let d = new Date(new Date + 3600000)
-        let locale = 'id'
+        let locale = 'es'
         let date = d.toLocaleDateString(locale, {
             day: 'numeric',
             month: 'long',
@@ -145,7 +155,11 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
         })
 
         if (!teks) {
-            let menuList = `${defaultMenu.before}\n\n┌  ◦ *DAFTAR MENU*\n`
+            // Elegir ASCII aleatorio
+            let asciiRandom = asciiVariants[Math.floor(Math.random() * asciiVariants.length)]
+            let menuList = defaultMenu.before.replace('%ascii', asciiRandom)
+            
+            menuList += `\n\n┌  ◦ *DAFTAR MENU*\n`
             for (let tag of arrayMenu) {
                 if (tag && allTags[tag]) {
                     menuList += `│  ◦ ${_p}menu ${tag}\n`
@@ -186,18 +200,16 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
         }
 
         if (!allTags[teks]) {
-            return m.reply(`Menu "${teks}" 🦈💙 𝑶𝒐𝒐𝒐𝒑𝒔~ 💙🦈  
+            return m.reply(`Menu "${teks}" 🦈💙 Ooops~ 💙🦈  
 El comando que buscas no está disponible... 🫧  
 Pero no te preocupes, capitán~ 🌊  
 Escribe *${_p}menu* para ver todos los comandos  
-y sumergirte en mi océano de opciones~ 🐟💙
-.`)
+y sumergirte en mi océano de opciones~ 🐟💙`)
         }
 
-        let menuCategory = defaultMenu.before + '\n\n'
+        let menuCategory = defaultMenu.before.replace('%ascii', asciiVariants[Math.floor(Math.random() * asciiVariants.length)]) + '\n\n'
         
         if (teks === 'all') {
-            // category all
             for (let tag of arrayMenu) {
                 if (tag !== 'all' && allTags[tag]) {
                     menuCategory += defaultMenu.header.replace(/%category/g, allTags[tag]) + '\n'
@@ -261,7 +273,7 @@ y sumergirte en mi océano de opciones~ 🐟💙
             }
         }, {})
     } catch (e) {
-        conn.reply(m.chat, '🦈💙 𝑶𝒐𝒐𝒑𝒔~ 💙 Gomen gomen~ el menú tuvo un error... 🫧  Parece que las olas lo revolvieron todo 🌊  Intenta de nuevo en un momento, capitán~ 🐟  ¡Prometo que volverá a la normalidad! 💙', m)
+        conn.reply(m.chat, '🦈💙 Ooops~ 💙 Gomen gomen~ el menú tuvo un error... 🌊 Intenta de nuevo en un momento, capitán~ 🐟', m)
         console.error(e)
     }
 }
