@@ -1,5 +1,5 @@
 // ─────────────── ⋆⋅☆⋅⋆ ───────────────
-// 🌊🦈 GuraBot - Age Detector 🎭
+// 🌊🦈 GuraBot - Detector de Edad 🎭
 // "glub glub~ ¡Déjame adivinar tu edad bajo el océano~!" 🐠
 // ─────────────── ⋆⋅☆⋅⋆ ───────────────
 
@@ -11,7 +11,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
   let mime = (q.mimetype || q.mediaType || '');
   
   if (/image/g.test(mime) && !/webp/g.test(mime)) {
-    await conn.reply(m.chat, '⏳🐟 Gura is analyzing your face... glub~', m);
+    await conn.reply(m.chat, '⏳🐟 Gura está analizando tu cara... glub glub~', m);
     
     try {
       const img = await q.download?.();
@@ -21,31 +21,31 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
       // 🦈 Formato del resultado
       let txt = `
-*───「 🦈 Age Detection by Gura 」───*
+*───「 🦈 Detector de Edad by Gura 」───*
 
-✨ Score: ${convert.result.score}
-👶 Age: ${convert.result.age}
-🚻 Gender: ${convert.result.gender}
-😊 Expression: ${convert.result.expression}
-🔷 Face Shape: ${convert.result.faceShape}
+✨ Precisión: ${convert.result.score}
+👶 Edad: ${convert.result.age}
+🚻 Género: ${convert.result.gender}
+😊 Expresión: ${convert.result.expression}
+🔷 Forma del rostro: ${convert.result.faceShape}
 
-🌊 *Comentario de Gura*: "¡Wow, así es como luces en mi arrecife, desu~!" 🐠
+🌊 *Comentario de Gura*: "¡Wow, así luces en mi arrecife, desu~!" 🐠
 `.trim();
 
       await conn.sendFile(m.chat, out, 'age.png', txt, m);
 
     } catch (e) {
       console.log(e);
-      m.reply('⚠️🐋 *Glub... la identificación falló, intenta de nuevo desu~*');
+      m.reply('⚠️🐋 *Glub... la identificación falló, inténtalo de nuevo desu~*');
     }
 
   } else {
-    m.reply(`📸 Kirim gambar dengan caption *${usedPrefix + command}* atau tag gambar yang sudah dikirim`);
+    m.reply(`📸 Envía una imagen con el comando *${usedPrefix + command}* o responde a una imagen ya enviada`);
   }
 };
 
 // 📌 Info del comando
-handler.help = handler.command = ['age', 'agedetect', 'agedetector'];
+handler.help = handler.command = ['edad', 'agedetect', 'agedetector'];
 handler.tags = ['ai'];
 handler.premium = false;
 handler.limit = true;
