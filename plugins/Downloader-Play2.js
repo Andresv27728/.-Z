@@ -1,5 +1,7 @@
 let search = require('yt-search');
 let fetch = require('node-fetch');
+let ytdl = require('ytdl-core');
+let { PassThrough } = require('stream');
 
 let handler = async (m, { conn, text }) => {
     if (!text) throw '🐬✨ Ingresa el título de YouTube, senpai~';
@@ -9,49 +11,72 @@ let handler = async (m, { conn, text }) => {
         // Buscar el video en YouTube
         const look = await search(text);
         const video = look.videos[0];
-        if (!video) throw '🦈💦 No encontré nada, nya~ intenta con otro título.';
+        if (!video) throw '🦈💦 No encontré nada, intenta con otro título.';
 
-        let videoUrl;
+        const tryApis = async () => {
+            const promises = [
+                // SpeedMaster
+                (async () => {
+                    try {
+                        const res = await fetch(`http://br1.speedmasterhost.com.br:2029/youtube/play?query=${encodeURIComponent(text)}&apikey=danieldev`);
+                        const data = await res.json();
+                        if (data?.audio) return await (await fetch(data.audio)).buffer();
+                    } catch {}
+                    throw 'SpeedMaster falló';
+                })(),
+                // BotCahx
+                (async () => {
+                    try {
+                        const res = await fetch(`https://api.botcahx.eu.org/api/dowloader/yt?url=${encodeURIComponent(video.url)}&apikey=btc`);
+                        const data = await res.json();
+                        if (data?.result?.mp4) return await (await fetch(data.result.mp4)).buffer();
+                    } catch {}
+                    throw 'BotCahx falló';
+                })(),
+                // GiftedTech
+                (async () => {
+                    try {
+                        const res = await fetch(`https://api.giftedtech.web.id/api/download/ytdl?apikey=gifted&url=${encodeURIComponent(video.url)}`);
+                        const data = await res.json();
+                        if (data?.result?.url) return await (await fetch(data.result.url)).buffer();
+                    } catch {}
+                    throw 'GiftedTech falló';
+                })(),
+                // MyApiAdonix
+                (async () => {
+                    try {
+                        const res = await fetch(`https://myapiadonix.vercel.app/api/ytmp4?url=${encodeURIComponent(video.url)}`);
+                        const data = await res.json();
+                        if (data?.result) return await (await fetch(data.result)).buffer();
+                    } catch {}
+                    throw 'MyApiAdonix falló';
+                })(),
+                // MatheusIshiyama
+                (async () => {
+                    try {
+                        const res = await fetch(`https://youtube-download-api.matheusishiyama.repl.co/mp4/?url=${encodeURIComponent(video.url)}`);
+                        if (res.ok) return await res.buffer();
+                    } catch {}
+                    throw 'MatheusIshiyama falló';
+                })(),
+                // Respaldo ytdl-core
+                (async () => {
+                    try {
+                        const stream = ytdl(video.url, { filter: 'audioandvideo', quality: 'highest' });
+                        const pass = new PassThrough();
+                        stream.pipe(pass);
+                        const chunks = [];
+                        for await (const chunk of pass) chunks.push(chunk);
+                        return Buffer.concat(chunks);
+                    } catch {}
+                    throw 'ytdl-core falló';
+                })()
+            ];
 
-        // Intento 1: SpeedMaster
-        try {
-            const apiSpeedMaster = `http://br1.speedmasterhost.com.br:2029/youtube/play?query=${encodeURIComponent(text)}&apikey=danieldev`;
-            const res1 = await fetch(apiSpeedMaster);
-            const data1 = await res1.json();
-            if (data1?.audio) videoUrl = data1.audio; // usar audio o url de video si da
-        } catch (e) { console.log('API SpeedMaster falló'); }
+            return await Promise.any(promises);
+        };
 
-        // Intento 2: BotCahx
-        if (!videoUrl) {
-            try {
-                const apiBotCahx = `https://api.botcahx.eu.org/api/dowloader/yt?url=${encodeURIComponent(video.url)}&apikey=btc`;
-                const res2 = await fetch(apiBotCahx);
-                const data2 = await res2.json();
-                if (data2?.result?.mp4) videoUrl = data2.result.mp4;
-            } catch (e) { console.log('API BotCahx falló'); }
-        }
-
-        // Intento 3: GiftedTech
-        if (!videoUrl) {
-            try {
-                const apiGifted = `https://api.giftedtech.web.id/api/download/ytdl?apikey=gifted&url=${encodeURIComponent(video.url)}`;
-                const res3 = await fetch(apiGifted);
-                const data3 = await res3.json();
-                if (data3?.result?.url) videoUrl = data3.result.url;
-            } catch (e) { console.log('API GiftedTech falló'); }
-        }
-
-        // Intento 4: MyApiAdonix
-        if (!videoUrl) {
-            try {
-                const apiAdonix = `https://myapiadonix.vercel.app/api/ytmp4?url=${encodeURIComponent(video.url)}`;
-                const res4 = await fetch(apiAdonix);
-                const data4 = await res4.json();
-                if (data4?.result) videoUrl = data4.result;
-            } catch (e) { console.log('API MyApiAdonix falló'); }
-        }
-
-        if (!videoUrl) throw '💔🐟 Todas las APIs fallaron, intenta más tarde~';
+        const buffer = await tryApis();
 
         // Preparar mensaje de información
         let caption = '';
@@ -81,27 +106,26 @@ let handler = async (m, { conn, text }) => {
             }
         }, {});
 
-        // Enviar video
-        await conn.sendMessage(m.chat, {
-            video: { url: videoUrl },
-            mimetype: 'video/mp4',
-            caption: `🎥✨ Aquí tienes tu video, senpai~`,
-            contextInfo: {
-                externalAdReply: {
-                    title: `🎬🐬 ${video.title}`,
-                    body: "Gura trajo tu video desde el océano~ 🐚💖",
-                    thumbnailUrl: video.image,
-                    sourceUrl: video.url,
-                    mediaType: 1,
-                    showAdAttribution: false,
-                    renderLargerThumbnail: true
-                }
-            }
-        }, { quoted: m });
+        // Verificar tamaño para enviar como video o documento
+        const MAX_VIDEO_SIZE = 16 * 1024 * 1024; // 16 MB
+        if (buffer.length <= MAX_VIDEO_SIZE) {
+            await conn.sendMessage(m.chat, {
+                video: buffer,
+                mimetype: 'video/mp4',
+                caption: `🎥✨ Aquí tienes tu video, senpai~`,
+            }, { quoted: m });
+        } else {
+            await conn.sendMessage(m.chat, {
+                document: buffer,
+                mimetype: 'video/mp4',
+                fileName: `${video.title}.mp4`,
+                caption: `📦🎥 Tu video excede 16MB, lo envié como documento, senpai~`,
+            }, { quoted: m });
+        }
 
     } catch (e) {
         console.error(e);
-        conn.reply(m.chat, '💔🐟 ¡Ups! Algo salió mal bajo el océano~', m);
+        conn.reply(m.chat, '💔🐟 ¡Ups! Todas las APIs fallaron o hubo un error bajo el océano~', m);
     }
 };
 
