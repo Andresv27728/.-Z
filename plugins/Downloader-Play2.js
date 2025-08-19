@@ -11,10 +11,6 @@ let handler = async (m, { conn, text }) => {
         const video = look.videos[0];
         if (!video) throw '🦈💦 No encontré nada, nya~ intenta con otro título.';
 
-        if (video.seconds >= 7200) {
-            return conn.reply(m.chat, '⚠️⏰ ¡El video dura más de 2 horas, senpai! Busca algo más corto~', m);
-        }
-
         let videoUrl;
 
         // Intento 1: SpeedMaster
@@ -22,7 +18,7 @@ let handler = async (m, { conn, text }) => {
             const apiSpeedMaster = `http://br1.speedmasterhost.com.br:2029/youtube/play?query=${encodeURIComponent(text)}&apikey=danieldev`;
             const res1 = await fetch(apiSpeedMaster);
             const data1 = await res1.json();
-            if (data1?.audio) videoUrl = data1.audio; // Usamos audio para video no da URL directa? si da, reemplazar
+            if (data1?.audio) videoUrl = data1.audio; // usar audio o url de video si da
         } catch (e) { console.log('API SpeedMaster falló'); }
 
         // Intento 2: BotCahx
@@ -31,7 +27,7 @@ let handler = async (m, { conn, text }) => {
                 const apiBotCahx = `https://api.botcahx.eu.org/api/dowloader/yt?url=${encodeURIComponent(video.url)}&apikey=btc`;
                 const res2 = await fetch(apiBotCahx);
                 const data2 = await res2.json();
-                if (data2?.result?.mp4) videoUrl = data2.result.mp4; // si mp4 no existe, tal vez mp3/audio
+                if (data2?.result?.mp4) videoUrl = data2.result.mp4;
             } catch (e) { console.log('API BotCahx falló'); }
         }
 
