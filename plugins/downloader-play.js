@@ -1,5 +1,5 @@
 let search = require('yt-search');
-let ytdl = require('ytdl-core');
+let fetch = require('node-fetch');
 
 let handler = async (m, { conn, text }) => {
     if (!text) throw '🐬✨ Ingresa el título de YouTube, senpai~';
@@ -15,8 +15,34 @@ let handler = async (m, { conn, text }) => {
             return conn.reply(m.chat, '⚠️⏰ ¡El video dura más de 1 hora, senpai! Busca algo más cortito~', m);
         }
 
-        // Obtener enlace directo de audio con ytdl
-        const audioStream = ytdl(video.url, { filter: 'audioonly', quality: 'highestaudio' });
+        let audioUrl;
+
+        // Intento 1: API SpeedMaster
+        try {
+            const res = await fetch(`http://br1.speedmasterhost.com.br:2029/youtube/play?query=${encodeURIComponent(text)}&apikey=danieldev`);
+            const data = await res.json();
+            if (data && data.audio) audioUrl = data.audio;
+        } catch (e) { console.log('API SpeedMaster falló'); }
+
+        // Intento 2: API BotCahx (requiere key)
+        if (!audioUrl) {
+            try {
+                const res = await fetch(`https://api.botcahx.eu.org/api/dowloader/yt?url=${encodeURIComponent(video.url)}&apikey=btc`);
+                const data = await res.json();
+                if (data && data.result?.mp3) audioUrl = data.result.mp3;
+            } catch (e) { console.log('API BotCahx falló'); }
+        }
+
+        // Intento 3: API MyApiAdonix (sin key)
+        if (!audioUrl) {
+            try {
+                const res = await fetch(`https://myapiadonix.vercel.app/api/ytmp3?url=${encodeURIComponent(video.url)}`);
+                const data = await res.json();
+                if (data && data.result) audioUrl = data.result;
+            } catch (e) { console.log('API MyApiAdonix falló'); }
+        }
+
+        if (!audioUrl) throw '💔🐟 Todas las APIs fallaron, intenta más tarde~';
 
         // Preparar mensaje de información
         let caption = '';
@@ -29,7 +55,7 @@ let handler = async (m, { conn, text }) => {
         caption += `🌊 *Enlace:* ${video.url}\n`;
         caption += `🖼️ *Miniatura:* ${video.image}`;
 
-        // Enviar info del video
+        // Enviar info
         await conn.relayMessage(m.chat, {
             extendedTextMessage: {
                 text: caption,
@@ -46,9 +72,9 @@ let handler = async (m, { conn, text }) => {
             }
         }, {});
 
-        // Enviar el audio
+        // Enviar audio
         await conn.sendMessage(m.chat, {
-            audio: audioStream,
+            audio: { url: audioUrl },
             mimetype: 'audio/mpeg',
             contextInfo: {
                 externalAdReply: {
