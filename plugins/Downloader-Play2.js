@@ -51,14 +51,6 @@ let handler = async (m, { conn, text }) => {
                     } catch {}
                     throw 'MyApiAdonix falló';
                 })(),
-                // MatheusIshiyama
-                (async () => {
-                    try {
-                        const res = await fetch(`https://youtube-download-api.matheusishiyama.repl.co/mp4/?url=${encodeURIComponent(video.url)}`);
-                        if (res.ok) return await res.buffer();
-                    } catch {}
-                    throw 'MatheusIshiyama falló';
-                })(),
                 // Respaldo ytdl-core
                 (async () => {
                     try {
@@ -135,4 +127,4 @@ handler.exp = 0;
 handler.limit = true;
 handler.premium = false;
 
-module.exports = handler;
+module.exports = handler; 
